@@ -1,19 +1,14 @@
-FROM ubuntu:24.04
-
-# Устанавливаем Java 17, утилиту curl для скачивания и ca-certificates
-RUN apt-get update && apt-get install -y --no-install-recommends openjdk-17-jre-headless curl ca-certificates && rm -rf /var/lib/apt/lists/*
+# Используем готовый и проверенный образ Zenith Proxy от комьюнити
+FROM brickmasterhunt/zenithproxy:latest
 
 WORKDIR /app
 
-# Скачиваем стабильный JAR-файл Zenith Proxy напрямую
-RUN curl -L -o zenith.jar https://github.com
-
-# Копируем конфиг из твоего репозитория внутрь сервера
+# Копируем ваш конфигурационный файл
 COPY config.yml .
 
-# Уведомляем хостинг, какой порт слушать. 
-# Render автоматически дает порт через переменную среды, но мы также фиксируем порт 10000
+# Render требует порт 10000 для бесплатных веб-сервисов
 EXPOSE 10000
 
-# Запускаем чистую Java без капризных лаунчеров и без ожидания ввода в консоли
-CMD ["java", "-jar", "zenith.jar", "--no-console", "<", "/dev/null"]
+# Запускаем прокси, принудительно указав порт 10000 через аргументы запуска Java
+CMD ["java", "-jar", "Zenith-Proxy.jar", "--bind-port", "10000", "--no-console"]
+
