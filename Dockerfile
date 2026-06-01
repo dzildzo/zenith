@@ -4,7 +4,7 @@ FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /build
 
 # Клонируем ПОЛНУЮ ссылку на исходный код ZenithProxy (исправлено)
-RUN git clone https://github.com .
+RUN git clone https://github.com/rfresh2/ZenithProxy
 
 # Собираем чистый, рабочий .jar файл без тестов
 RUN mvn clean package -DskipTests
