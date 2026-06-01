@@ -1,30 +1,23 @@
-# --- ЭТАП 1: Сборка прокси из исходного кода ---
-FROM maven:3.9-eclipse-temurin-17 AS builder
-
-WORKDIR /build
-
-# Клонируем официальный исходный код ZenithProxy
-RUN git clone https://github.com/rfresh2/ZenithProxy
-
-# Переходим в созданную папку с проектом, где лежит pom.xml
-WORKDIR /build/ZenithProxy
-
-# Собираем чистый, рабочий .jar файл без тестов
-RUN mvn clean package -DskipTests
-
-# --- ЭТАП 2: Запуск готового приложения ---
 FROM eclipse-temurin:17-jre-alpine
+
+# Устанавливаем curl для скачивания
+RUN apk add --no-cache curl
 
 WORKDIR /app
 
-# Копируем свежесобранный .jar файл из папки ZenithProxy первого этапа
-COPY --from=builder /build/ZenithProxy/target/Zenith-Proxy-*.jar ./zenith.jar
+# Скачиваем оригинальный рабочий .jar файл напрямую.
+# Цикл проверяет размер файла: если GitHub отдал ошибку, он качает заново, пока не скачает все 15+ МБ.
+RUN for i in $(seq 1 5); do \
+    curl -L -o zenith.jar https://github.com && \
+    [ $(stat -c%s zenith.jar) -gt 10000000 ] && break || sleep 2; \
+    done
 
-# Копируем ваш конфигурационный файл config.yml
+# Копируем твой конфиг из репозитория
 COPY config.yml .
 
+# Открываем порт для Render
 EXPOSE 10000
 
-# Запуск чистой Java на порту Render без лаунчеров и зависаний консоли
-CMD ["java", "-jar", "zenith.jar", "--no-console"]
+# Запуск чистой Java без консоли на порту 10000
+CMD ["java", "-jar", "zenith.jar", "--bind-port", "10000", "--no-console"]
 
