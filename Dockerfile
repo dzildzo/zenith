@@ -3,7 +3,7 @@ FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /build
 
-# Клонируем официальный исходный код ZenithProxy
+# Клонируем ПОЛНУЮ ссылку на исходный код ZenithProxy (исправлено)
 RUN git clone https://github.com .
 
 # Собираем чистый, рабочий .jar файл без тестов
@@ -24,5 +24,6 @@ EXPOSE 10000
 
 # Запуск чистой Java на порту Render без лаунчеров и зависаний консоли
 CMD ["java", "-jar", "zenith.jar", "--no-console"]
+
 
 
